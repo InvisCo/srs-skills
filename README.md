@@ -52,6 +52,43 @@ Shared reference files (single source of truth) live in
 - `ambiguity.md` — detection and repair rules: `only` placement (with real
   EVLA SRS corrections), dangerous `all`, obligation mood, fuzzy
   quantifiers, and the recall caveat.
+- `schema.md` + `requirement.schema.json` — the machine-readable layer: one
+  YAML record per requirement / use case / A-E-V item / interface item.
+
+## Machine-checked requirements and the build DAG
+
+Requirements can be captured as **validated structured records** alongside
+the prose documents:
+
+```
+requirements/
+├── reqs/            # FR-nnn / NFR-nnn / CON-nnn — one YAML per requirement
+├── usecases/        # UC-nn — name, actor, INTF anchors, scenarios
+├── assumptions/     # A-nn / E-nn / V-nn — with the system's stance
+├── interfaces/      # INTF-nn — the domain model's interface items
+├── traceability.mmd # generated Mermaid DAG of the dependency graph
+└── build-plan.md    # generated topological build order for task execution
+```
+
+The validator (`srs-requirements/scripts/validate_requirements.js`,
+self-contained Node script) enforces the schema and lints every statement
+against the ambiguity rules:
+
+- **errors** — duplicate/malformed IDs, missing fields, dangling or
+  self references, **dependency cycles**, missing verification blocks,
+  unquantified NFR criteria, use cases with no interface anchors, unverified
+  G-requirements that entered the build;
+- **warnings** — vague terms ("user-friendly", "fast"), fuzzy quantifiers
+  ("most", "often"), unbounded `all`/`always`/`never`, mood drift
+  (`should`/`may` in a binding requirement), compound obligations, unplaced
+  `only`, orphan interface items, use cases with no exception scenario;
+  `--strict` promotes warnings to errors.
+
+It also generates the **traceability DAG** (`traceability.mmd`) and the
+**build plan** (`build-plan.md`) — the requirements grouped into topological
+stages so implementation can be scheduled: stage 1 has no upstream
+dependencies, each later stage builds only on earlier stages. Every cycle is
+a defect to fix before any code.
 
 ## Layout
 
@@ -63,6 +100,9 @@ srs-skills/
     reference/refmodel.md
     reference/templates.md
     reference/ambiguity.md
+    reference/schema.md
+    reference/requirement.schema.json
+    scripts/validate_requirements.js   (+ vendor/js-yaml.min.js, MIT)
   srs-elicitation/SKILL.md
   srs-vision/SKILL.md
   srs-domain-model/SKILL.md

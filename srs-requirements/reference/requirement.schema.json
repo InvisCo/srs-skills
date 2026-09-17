@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/InvisCo/srs-skills/main/srs-requirements/reference/requirement.schema.json",
+  "title": "Requirements repository records",
+  "description": "One YAML record per file. The validator routes each record by its id prefix: FR/NFR/CON requirements, UC use cases, A/E/V assumptions-exceptions-variations, INTF interface items.",
+  "oneOf": [
+    { "$ref": "#/definitions/requirement" },
+    { "$ref": "#/definitions/usecase" },
+    { "$ref": "#/definitions/assumption" },
+    { "$ref": "#/definitions/interface" }
+  ],
+  "definitions": {
+    "requirement": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^(FR|NFR|CON)-[0-9]{3}$" },
+        "title": { "type": "string", "minLength": 1 },
+        "category": { "enum": ["G", "D"], "description": "G = scope-determining hypothesis; D = scope-determined, gates coding." },
+        "statement": { "type": "string", "minLength": 1, "description": "One atomic obligation, phrased with 'shall' (or 'must' for constraints). No vague words, no fuzzy quantifiers." },
+        "rationale": { "type": "string" },
+        "source": { "type": "string" },
+        "derived_from": { "type": "array", "items": { "type": "string", "pattern": "^(UC-[0-9]{2}|(FR|NFR|CON)-[0-9]{3})$" } },
+        "depends_on": { "type": "array", "items": { "type": "string", "pattern": "^(FR|NFR|CON)-[0-9]{3}$" } },
+        "relies_on": { "type": "array", "items": { "type": "string", "pattern": "^(A|E|V)-[0-9]{2}$" } },
+        "domain_facts": { "type": "array", "items": { "type": "string", "pattern": "^DM-[0-9]{2}$" } },
+        "conflicts_with": { "type": "array", "items": { "type": "string", "pattern": "^(FR|NFR|CON)-[0-9]{3}$" } },
+        "verification": {
+          "type": "object",
+          "properties": {
+            "method": { "enum": ["test", "analysis", "inspection", "demonstration"] },
+            "criterion": { "type": "string", "minLength": 1 }
+          },
+          "required": ["method", "criterion"]
+        },
+        "status": { "enum": ["proposed", "confirmed", "accepted", "implemented", "verified", "deprecated"] },
+        "priority": { "enum": ["must", "should", "could"] },
+        "tags": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["id", "title", "category", "statement", "priority", "status", "verification"],
+      "additionalProperties": false
+    },
+    "usecase": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^UC-[0-9]{2}$" },
+        "name": { "type": "string", "minLength": 1, "description": "Verb phrase, imperative, specific — not too general." },
+        "actor": { "type": "string", "minLength": 1 },
+        "interfaces": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^INTF-[0-9]{2}$" }, "description": "Two-way check anchor: every UC names its INTF items; every INTF item is touched by a UC." },
+        "derived_from": { "type": "array", "items": { "type": "string" } },
+        "scenario": {
+          "type": "object",
+          "properties": {
+            "typical": { "type": "string", "minLength": 1 },
+            "alternative": { "type": "string" },
+            "exception": { "type": "string" }
+          },
+          "required": ["typical"]
+        }
+      },
+      "required": ["id", "name", "actor", "interfaces", "scenario"],
+      "additionalProperties": false
+    },
+    "assumption": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^[AEV]-[0-9]{2}$" },
+        "statement": { "type": "string", "minLength": 1 },
+        "stance": { "type": "string", "description": "Assumptions (A-nn): depends | checks | works-around. Exceptions/variations: free-text handling." },
+        "affects": { "type": "array", "items": { "type": "string", "pattern": "^((FR|NFR|CON)-[0-9]{3}|UC-[0-9]{2})$" } }
+      },
+      "required": ["id", "statement"],
+      "additionalProperties": false
+    },
+    "interface": {
+      "properties": {
+        "id": { "type": "string", "pattern": "^INTF-[0-9]{2}$" },
+        "name": { "type": "string", "minLength": 1 },
+        "kind": { "enum": ["user", "hardware", "software", "comms"] },
+        "sensed": { "type": "string", "description": "What an actor perceives from this item." },
+        "controlled": { "type": "string", "description": "What an actor can do to this item." }
+      },
+      "required": ["id", "name", "kind"],
+      "additionalProperties": false
+    }
+  }
+}

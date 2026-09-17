@@ -3,6 +3,12 @@
 Copy these shapes. Do not invent new column sets — these are the canonical
 shapes for these deliverables.
 
+**Machine layer:** every requirement row, use case, and A/E/V item in these
+templates has a machine-readable twin — one YAML record per item, validated
+by `../scripts/validate_requirements.js`. Read `schema.md` for the record
+format; keep the documents and the records in sync by generating the §4
+tables and the traceability DAG from the records.
+
 ## A / E / V list (D1 — Vision document)
 
 For **every** feature in the vision, work out three lists. These become the

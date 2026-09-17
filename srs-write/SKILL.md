@@ -18,8 +18,12 @@ can work from **without asking or inventing**.
 Read `../srs-requirements/reference/refmodel.md` and
 `../srs-requirements/reference/templates.md` (the exact SRS structure and
 tables) and `../srs-requirements/reference/ambiguity.md` before writing a
-word. Start from the `srs-domain-model` diagram, the `srs-use-cases`
-model, and the `srs-verify` verdicts.
+word. For the machine layer, read
+`../srs-requirements/reference/schema.md`: every requirement, use case, and
+A/E/V item is also a validated YAML record under the project's
+`requirements/` repository, and the §4 tables plus the traceability DAG are
+generated from those records. Start from the `srs-domain-model` diagram, the
+`srs-use-cases` model, and the `srs-verify` verdicts.
 
 ## 1. Lay out the document
 
@@ -99,10 +103,44 @@ deferred G-requirement.
 **Completion:** the two tables are complete and the traceability is two-way
 with no orphans.
 
-## 7. Inspect the SRS (D5)
+## 7. Capture the machine layer (records, validation, DAG, build plan)
+
+Every requirement row in §4.1, every NFR and constraint, every use case, and
+every A/E/V item **also exists as a YAML record** in the project's
+`requirements/` repository (format: `../srs-requirements/reference/schema.md`).
+The records and the document are two views of one content — generate the
+§4 tables from the records rather than typing them twice:
+
+1. write one record per item (`reqs/`, `usecases/`, `assumptions/`,
+   `interfaces/`), with `derived_from`, `depends_on`, `relies_on`,
+   `verification`, and `category` (G vs D) filled;
+2. run the validator — **zero errors is the gate** for step 8:
+
+   ```
+   node <srs-skills>/srs-requirements/scripts/validate_requirements.js \
+     requirements --mermaid requirements/traceability.mmd \
+     --plan requirements/build-plan.md
+   ```
+
+   Every warning is a candidate defect for `srs-verify`, not noise to ignore.
+3. regenerate the SRS tables from the records so the document cannot drift.
+
+The validator also emits `traceability.mmd` — the dependency DAG (use cases
+→ requirements, `relies_on` dashed; embed it in the SRS appendix) — and
+`build-plan.md`, the requirements grouped into topological **stages** for
+task execution: stage 1 has no upstream dependencies, each later stage builds
+only on earlier ones. Give the build plan to the developers as the execution
+order, and treat every reported cycle as a defect to fix before any code.
+
+**Completion:** validator exits 0, DAG and build plan are generated, and
+the §4 tables match the records exactly.
+
+## 8. Inspect the SRS (D5)
 
 Run the validation criteria over the **whole** document — this is what turns a
 draft into a final:
+- **machine checks** — the validator passes with zero errors, and every lint
+  warning is resolved or explicitly routed to `srs-verify`;
 - **correctness** — it says what the client actually wants (the `D, S ⊢ R`
   verdicts hold);
 - **unambiguousness** — every sentence has one reading (re-run
@@ -117,7 +155,7 @@ Fix every defect, then run `srs-verify` once more on the final SRS.
 **Completion:** all six criteria pass on a second pass and the Q&A list is
 empty or fully deferred.
 
-## 8. Declare RE done
+## 9. Declare RE done
 
 RE is done when **every** programmer can write the required code and **every**
 tester can write the required test cases from this SRS **without** asking

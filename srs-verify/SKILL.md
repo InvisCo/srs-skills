@@ -30,7 +30,20 @@ you begin.
 
 ## 2. The ambiguity & vagueness hunt
 
-Walk the artifact **sentence by sentence** using
+If the artifact is backed by a `requirements/` repository, run the validator
+first — every lint hit is a **candidate defect**:
+
+```
+node <srs-skills>/srs-requirements/scripts/validate_requirements.js requirements
+```
+
+Vague terms, fuzzy quantifiers, unbounded `all`, mood drift, compound
+obligations, unplaced `only`, unquantified NFR criteria, orphan interfaces,
+and dependency cycles — confirm each by hand against `reference/ambiguity.md`
+and drop the false positives; mechanical flags never replace the
+sentence-by-sentence pass.
+
+Then walk the artifact **sentence by sentence** using
 `reference/ambiguity.md`:
 - list **every** reading a careful reader could take;
 - flag a sentence as **ambiguous** if it has more than one;
@@ -61,7 +74,7 @@ as such.
 
 Turn every open item into **one question** for the client:
 - each ambiguous sentence → the choice between the readings you found;
-- each vague term → "what number / bound did you intend?";
+- each vague term or unquantified NFR → "what number / bound did you intend?";
 - each failed `D, S ⊢ R` → "the spec cannot guarantee R because of D — do you
   want to strengthen the spec, add the domain fact, or relax R?";
 - each assumption → "must this hold, or should the system check / work around

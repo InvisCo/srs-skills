@@ -6,8 +6,9 @@ description: |-
   engineering",
   "requirements gathering", "vision document", "assumptions / exceptions /
   variations", "domain model", "use case", "scenario", "ambiguity",
-  "vagueness", "SRS", "requirements specification", or "re-verify the
-  requirements against the client".
+  "vagueness", "SRS", "requirements specification", "requirements schema",
+  "traceability DAG", "build plan", "validate the requirements", or
+  "re-verify the requirements against the client".
 ---
 
 # SRS requirements engineering
@@ -21,6 +22,14 @@ obligation, `D, S ⊢ R`, and on the G-vs-D scope split. Read
 `reference/templates.md` before producing any artifact; they are the canonical shapes for these
 deliverables. Read `reference/ambiguity.md` before any
 verification pass or before finalizing requirement prose.
+
+For machine-checked requirements, read `reference/schema.md`: every
+requirement, use case, and A/E/V item also lives as a YAML record in a
+`requirements/` repository, validated by `scripts/validate_requirements.js`.
+The validator enforces the schema, lints statements against
+`reference/ambiguity.md`, and generates the traceability DAG
+(`traceability.mmd`) and the topological build plan (`build-plan.md`) used
+to order task execution.
 
 ## The lifecycle and which skill produces each step
 
@@ -50,7 +59,8 @@ verification pass or before finalizing requirement prose.
   Run it after every deliverable, and again on the final SRS.
 - **`srs-write`** — writing the SRS (IEEE + behavioural sections, FR/NFR tables,
   UC descriptions, state machines, UI) and **inspecting** it against the
-  validation criteria before calling RE done.
+  validation criteria before calling RE done. Also captures the
+  machine-readable records and generates the DAG + build plan.
 
 ## How to run the whole workflow
 
@@ -61,9 +71,11 @@ verification pass or before finalizing requirement prose.
 5. `srs-use-cases` — build the UC model + scenarios from D.
 6. `srs-verify` — re-verify D and the UCs (`D, S ⊢ R` for each feature).
 7. `srs-write` — draft the SRS (D4).
-8. `srs-verify` — re-verify the SRS sentence by sentence.
-9. `srs-write` — inspect and finalize (D5). RE is done when every programmer
-   and tester can work from it without asking or inventing.
+8. `srs-verify` — re-verify the SRS sentence by sentence; clear the
+   validator's lint warnings first, they are candidate defects.
+9. `srs-write` — inspect and finalize (D5): zero validator errors, records
+   and tables in sync, DAG and build plan regenerated. RE is done when every
+   programmer and tester can work from it without asking or inventing.
 
 At every `srs-verify` step, unresolved questions go back to the client
 through `srs-elicitation`. The client must stay reachable the whole time.
